@@ -37,6 +37,7 @@ public class BeaconDetail extends BaseFragment implements BeaconConfigurationLis
     private BeaconManager mBeaconManager;
     private Beacon mBeacon;
     private SBeacon sBeacon;
+    EditText temperature;
 
     @Nullable
     @Override
@@ -47,6 +48,9 @@ public class BeaconDetail extends BaseFragment implements BeaconConfigurationLis
 
         mBeaconManager = ((BluvisionSampleSDKApplication) getActivity().getApplication())
                 .getBeaconManager();
+
+        temperature = (EditText) rootView.findViewById(R.id.editTextTemp);
+
 
         if(mBeacon!=null) {
 
@@ -136,12 +140,19 @@ public class BeaconDetail extends BaseFragment implements BeaconConfigurationLis
                             //sBeacon.readAdvertisementSettings();
                             sBeacon.readDeviceStatus();
                             //Toast.makeText(getActivity(),String.valueOf(sBeacon.getTemperature()), Toast.LENGTH_LONG).show();
-
-
                         }
-
                     }
                 });
+        ((Button)rootView.findViewById(R.id.getLed)).setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        if(sBeacon!=null){
+                            sBeacon.alert(true, true);
+                        }
+                    }
+                });
+
 
 
         return rootView;
@@ -317,8 +328,8 @@ public class BeaconDetail extends BaseFragment implements BeaconConfigurationLis
 
     @Override
     public void onReadDeviceStatus(float v, float v1, short i) {
-        Toast.makeText(getActivity(),"Bateria: "+v+" Temperatura: "+v1+" N/A: "+i, Toast.LENGTH_LONG).show();
-
+        //Toast.makeText(getActivity(),"Bateria: "+v+" Temperatura: "+v1+" N/A: "+i, Toast.LENGTH_LONG).show();
+        temperature.setText(v1 + "°C");
     }
 
     @Override
