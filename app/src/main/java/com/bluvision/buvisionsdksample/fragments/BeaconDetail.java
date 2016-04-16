@@ -11,6 +11,7 @@ import com.bluvision.beeks.sdk.util.BeaconManager;
 import com.bluvision.buvisionsdksample.BluvisionSampleSDKApplication;
 import com.bluvision.buvisionsdksample.R;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.text.Editable;
@@ -23,6 +24,15 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -38,6 +48,8 @@ public class BeaconDetail extends BaseFragment implements BeaconConfigurationLis
     private Beacon mBeacon;
     private SBeacon sBeacon;
     EditText temperature;
+    Timer myTimer;
+    float temperatureReal;
 
     @Nullable
     @Override
@@ -183,11 +195,99 @@ public class BeaconDetail extends BaseFragment implements BeaconConfigurationLis
                     ((Button) rootView.findViewById(R.id.btnConnect)).setEnabled(false);
             ((Button)rootView.findViewById(R.id.btnDisconnect)).setEnabled(true);
             Toast.makeText(getActivity(),"Connected", Toast.LENGTH_LONG).show();
+           //codigo añadido
+            myTimer = new Timer();
+            myTimer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    // If you want to modify a view in your Activity
+                    timerMethod();
+                }
+            }, 1000, 15000); // initial delay 1 second, interval 1 second
+
 
         }else{
             Toast.makeText(getActivity(),"Connection failed", Toast.LENGTH_LONG).show();
         }
 
+    }
+
+    public void timerMethod() {
+        //sBeacon.alert(true, true);
+        sBeacon.readDeviceStatus();
+        Log.e("SID", "Temperatura : "+temperatureReal);
+       updateReceivedData(temperatureReal+"#"+temperatureReal);
+    }
+
+
+
+    private void updateReceivedData(String karelRead1) {
+
+        // si la trama contiene el mensaje de thingspeak envia la trama
+        //StringTokenizer st = new StringTokenizer(message, "thingspeak");
+        // se saca un substring que elimina el indice thingspeak y el /n del final de la linea
+        String ms = karelRead1;
+
+
+        // // TODO: 22/03/2016  api key automatic 3831SHX4AS2XD41T
+        String url = "https://api.thingspeak.com/update?api_key=K24OF4CX99WPXXV7";
+        //String url = "https://api.thingspeak.com/update?api_key=3831SHX4AS2XD41T";
+
+        // String url = "https://api.thingspeak.com/update?api_key="+sharedpreferences.getString(KeyThingspeak, "");
+        int i=0;
+
+
+        for (String token : ms.split("#")) {
+            i++;
+            url = url+"&field"+i+"="+token;
+        }
+
+        final String finalUrl = url;
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                HttpURLConnection urlConnection = null;
+                StringBuilder total = new StringBuilder();
+
+                try {
+                    URL url1 = new URL(finalUrl);
+                    urlConnection = (HttpURLConnection) url1.openConnection();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                try {
+                    InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+                    BufferedReader r = new BufferedReader(new InputStreamReader(in));
+                    String line;
+                    while ((line = r.readLine()) != null) {
+                        total.append(line);
+                    }
+                    Log.d("web", total.toString()+" "+finalUrl);
+                    if(total.toString().equals("0")){
+                        //ThingspeakState= false;
+                    }else{
+                        //ThingspeakState= true;
+                    }
+
+                    //readStream(in);
+                    urlConnection.disconnect();
+
+                    //finally {
+                    //  urlConnection.disconnect();
+                    //}
+                } catch (IOException e) {
+                    //ThingspeakState= false;
+                    e.printStackTrace();
+                } catch (NullPointerException e){
+                    //ThingspeakState= false;
+                    e.printStackTrace();
+                }
+            }
+        };
+
+        thread.start();
+        karelRead1 = new String();
     }
 
     @Override
@@ -241,6 +341,7 @@ public class BeaconDetail extends BaseFragment implements BeaconConfigurationLis
 
     @Override
     public void onConnectionExist() {
+
 
     }
 
@@ -330,6 +431,7 @@ public class BeaconDetail extends BaseFragment implements BeaconConfigurationLis
     public void onReadDeviceStatus(float v, float v1, short i) {
         //Toast.makeText(getActivity(),"Bateria: "+v+" Temperatura: "+v1+" N/A: "+i, Toast.LENGTH_LONG).show();
         temperature.setText(v1 + "°C");
+        temperatureReal = v1;
     }
 
     @Override
@@ -418,3 +520,25 @@ public class BeaconDetail extends BaseFragment implements BeaconConfigurationLis
 
     }
 }
+class Task implements Runnable {
+
+    float temperatura;
+
+    public void setTemperatura(float temp){
+        temperatura = temp;
+    }
+    @Override
+    public void run() {
+
+        for (int i = 0; i <= 10; i++) {
+
+            final int value = i;
+               try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+

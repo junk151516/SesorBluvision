@@ -6,10 +6,12 @@ import com.bluvision.buvisionsdksample.fragments.BeaconDetail;
 import com.bluvision.buvisionsdksample.fragments.ListBeaconsFragment;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -27,6 +29,8 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
     private HashMap<Class,Fragment> mFragmentHashMap = new HashMap<>();
     private BeaconDetail mBeaconDetail;
 
+    //private BackgroundService backgroundService;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,6 +47,7 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
                 builder.setMessage("Please grant location access so this app can detect beacons");
                 builder.setPositiveButton(android.R.string.ok, null);
                 builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @TargetApi(Build.VERSION_CODES.M)
                     @Override
                     public void onDismiss(DialogInterface dialog) {
 
@@ -58,6 +63,7 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
 
 
         swapFragment(ListBeaconsFragment.class,true,false);
+        //startService(new Intent(getBaseContext(),BackgroundService.class));
 
     }
 
@@ -123,6 +129,10 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
 
         mBeaconDetail = (BeaconDetail) getFragment(BeaconDetail.class,true);
         mBeaconDetail.setBeacon(beacon);
+
+        //backgroundService.setBeacon(beacon);
+
+        //startService(new Intent(getBaseContext(),BackgroundService.class));
 
         swapFragment(BeaconDetail.class,true,false);
 

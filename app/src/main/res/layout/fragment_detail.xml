@@ -93,7 +93,7 @@
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="getTemp"
+                android:text="@string/buttonTemp"
                 android:id="@+id/getTemp"
                 android:layout_below="@+id/containerActions"
                 android:layout_alignParentEnd="true"
@@ -102,7 +102,7 @@
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Led"
+                android:text="@string/buttonLight"
                 android:id="@+id/getLed"
                 android:longClickable="false"
                 android:nestedScrollingEnabled="false" />
